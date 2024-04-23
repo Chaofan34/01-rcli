@@ -2,16 +2,17 @@
 
 use std::fs;
 
+use anyhow::Ok;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use clap::Parser;
 use rcli::{
-    get_content, get_reader, process_csv, process_decode, process_encode, process_genpass,
-    process_text_key_generate, process_text_sign, process_text_verify, Base64SubCommand, Opts,
-    SubCommand, TextSubCommand,
+    get_content, get_reader, process_csv, process_decode, process_encode, process_genpass, process_text_key_generate, process_text_sign, process_text_verify, Base64SubCommand, HttpSubCommand, Opts, SubCommand, TextSubCommand,
+    process_httpserve,
 };
 use zxcvbn::zxcvbn;
 
 fn main() -> anyhow::Result<()> {
+    tracing_subscriber::fmt::init();
     let opts = Opts::parse();
     match opts.cmd {
         SubCommand::Csv(opts) => {
@@ -75,6 +76,11 @@ fn main() -> anyhow::Result<()> {
                 }
             }
         },
+        SubCommand::Http(cmd) => match cmd{
+            HttpSubCommand::Serve(opts) => {
+                process_httpserve(&opts.dir, opts.port)?;
+            }
+        }
     }
 
     Ok(())
