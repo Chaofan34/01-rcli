@@ -1,3 +1,5 @@
+use crate::CmdExector;
+use anyhow::Ok;
 use clap::Parser;
 
 #[derive(Debug, Parser)]
@@ -16,4 +18,18 @@ pub struct GenPassOpts {
 
     #[arg(long, default_value_t = true)]
     pub symbol: bool,
+}
+
+impl CmdExector for GenPassOpts {
+    async fn execute(self) -> anyhow::Result<()> {
+        let pass = crate::process_genpass(
+            self.length,
+            self.uppercase,
+            self.lowercase,
+            self.number,
+            self.symbol,
+        )?;
+        eprintln!("Password {}", pass);
+        Ok(())
+    }
 }

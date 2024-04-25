@@ -1,10 +1,12 @@
 mod base64;
 mod csv;
 mod genpass;
-mod text;
 mod http;
+mod text;
 
 use std::path::{Path, PathBuf};
+
+use crate::CmdExector;
 
 use self::{csv::CsvOpts, genpass::GenPassOpts};
 use clap::Parser;
@@ -12,8 +14,8 @@ use clap::Parser;
 pub use self::{
     base64::{Base64Format, Base64SubCommand},
     csv::OutputFormat,
-    text::{TextSignFormat, TextSubCommand},
     http::HttpSubCommand,
+    text::{TextSignFormat, TextSubCommand},
 };
 
 #[derive(Debug, Parser)]
@@ -29,11 +31,11 @@ pub enum SubCommand {
     Csv(CsvOpts),
     #[command(name = "genpass", about = "Generate a random password")]
     GenPass(GenPassOpts),
-    #[command(subcommand)]
+    #[command(subcommand, about = "base64")]
     Base64(Base64SubCommand),
-    #[command(subcommand)]
+    #[command(subcommand, about = "text")]
     Text(TextSubCommand),
-    #[command(subcommand)]
+    #[command(subcommand, about = "http")]
     Http(HttpSubCommand),
 }
 
@@ -66,5 +68,28 @@ mod tests {
         assert_eq!(verify_file("*"), Err("File does not exist"));
         assert_eq!(verify_file("Cargo.toml"), Ok("Cargo.toml".into()));
         assert_eq!(verify_file("not-exist"), Err("File does not exist"));
+    }
+}
+
+impl CmdExector for SubCommand {
+    async fn execute(self) -> anyhow::Result<()> {
+        match self {
+            SubCommand::Csv(opts) => {
+                opts.execute().await?;
+            }
+            SubCommand::GenPass(opts) => {
+                opts.execute().await?;
+            }
+            SubCommand::Base64(cmd) => {
+                cmd.execute().await?;
+            }
+            SubCommand::Text(cmd) => {
+                cmd.execute().await?;
+            }
+            SubCommand::Http(cmd) => {
+                cmd.execute().await?;
+            }
+        }
+        Ok(())
     }
 }

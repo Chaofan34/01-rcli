@@ -1,4 +1,7 @@
+use crate::CmdExector;
+
 use super::verify_file;
+use anyhow::Ok;
 use clap::Parser;
 use std::{fmt, str::FromStr};
 
@@ -54,5 +57,17 @@ impl FromStr for OutputFormat {
 impl fmt::Display for OutputFormat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", Into::<&str>::into(*self))
+    }
+}
+
+impl CmdExector for CsvOpts {
+    async fn execute(self) -> anyhow::Result<()> {
+        let output = if let Some(output) = self.output {
+            output.clone()
+        } else {
+            format!("output.{}", self.format)
+        };
+        crate::process_csv(&self.input, output, self.format)?;
+        Ok(())
     }
 }
